@@ -41,4 +41,3 @@ Security :- Arcjet
 Database :- Supabase(prisma)
 framework :- Next.js,Tailwind CSS
 Libarires :- react(with reusable component from shadcn ui)
-Backend :- inngest(all the action like budgeting ,sending notifications or alert message,)
