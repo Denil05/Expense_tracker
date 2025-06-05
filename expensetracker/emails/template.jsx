@@ -1,13 +1,38 @@
 import * as React from "react";
 import { Body, Button, Container, Head, Heading, Html, Preview, Section, Text, Hr } from "@react-email/components";
 
-export default function Email({
+export default function EmailTemplate({
     userName = "",
     type = "",
     data = {
-        
+        percentageUsed: 0,
+        budgetAmount: 0,
+        totalExpenses: 0,
+        month: new Date().toLocaleString('default', { month: 'long' }),
+        year: new Date().getFullYear()
     },
 }) {
+    // Default email content if type doesn't match
+    const defaultContent = (
+        <Html>
+            <Head />
+            <Preview>Welcome to Finance App</Preview>
+            <Body style={styles.body}>
+                <Container style={styles.container}>
+                    <Section style={styles.header}>
+                        <Heading style={styles.title}>Welcome</Heading>
+                    </Section>
+                    <Section style={styles.content}>
+                        <Text style={styles.greeting}>Hello {userName},</Text>
+                        <Text style={styles.message}>
+                            Welcome to our Finance App. We're here to help you manage your finances better.
+                        </Text>
+                    </Section>
+                </Container>
+            </Body>
+        </Html>
+    );
+
     if(type === "budget-alert"){
         return (
             <Html>
@@ -31,15 +56,15 @@ export default function Email({
                             <Section style={styles.statsContainer}>
                                 <div style={styles.stat}>
                                     <Text style={styles.statLabel}>Monthly Budget</Text>
-                                    <Text style={styles.statValue}>${data.budgetAmount.toLocaleString()}</Text>
+                                    <Text style={styles.statValue}>${Number(data.budgetAmount).toLocaleString()}</Text>
                                 </div>
                                 <div style={styles.stat}>
                                     <Text style={styles.statLabel}>Spent So Far</Text>
-                                    <Text style={styles.statValue}>${data.totalExpenses.toLocaleString()}</Text>
+                                    <Text style={styles.statValue}>${Number(data.totalExpenses).toLocaleString()}</Text>
                                 </div>
                                 <div style={styles.stat}>
                                     <Text style={styles.statLabel}>Remaining</Text>
-                                    <Text style={styles.statValue}>${(data.budgetAmount - data.totalExpenses).toLocaleString()}</Text>
+                                    <Text style={styles.statValue}>${(Number(data.budgetAmount) - Number(data.totalExpenses)).toLocaleString()}</Text>
                                 </div>
                             </Section>
 
@@ -85,6 +110,8 @@ export default function Email({
             </Html>
         );
     }
+
+    return defaultContent;
 }
 
 const styles = {

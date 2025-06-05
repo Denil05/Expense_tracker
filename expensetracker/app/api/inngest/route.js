@@ -2,9 +2,17 @@ import { inngest } from "@/lib/inngest/client";
 import { checkBudgetAlert } from "@/lib/inngest/functions";
 import { serve } from "inngest/next";
 
-
-// Create an API that serves zero functions
+// Create an API that serves Inngest functions
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [checkBudgetAlert],
+  middleware: {
+    onError: (error) => {
+      console.error("Inngest function error:", error);
+      return {
+        status: 500,
+        body: { error: "Internal server error" }
+      };
+    }
+  }
 });

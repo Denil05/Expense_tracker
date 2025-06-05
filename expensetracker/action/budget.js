@@ -5,16 +5,15 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 export async function getCurrentBudget(accountId) {
-    try{
+    try {
         const {userId} = await auth();
         if(!userId) throw new Error("Unauthorized");
 
-        const user=await db.user.findUnique({
+        const user = await db.user.findUnique({
             where: {clerkUserId: userId},
         });
 
-        if(!user)
-        {
+        if(!user) {
             throw new Error("User not found");
         }
         const budget = await db.budget.findFirst({
@@ -24,7 +23,7 @@ export async function getCurrentBudget(accountId) {
         });
 
         const currentDate = new Date();
-        const stratOfMonth = new Date(
+        const startOfMonth = new Date(
             currentDate.getFullYear(),
             currentDate.getMonth(),
             1
@@ -35,12 +34,13 @@ export async function getCurrentBudget(accountId) {
             0
         );
 
+        console.log("Fetching expenses for period:", { startOfMonth, endOfMonth });
         const expense = await db.transaction.aggregate({
             where: {
                 userId: user.id,
                 type: "EXPENSE",
                 date: {
-                    gte: stratOfMonth,
+                    gte: startOfMonth,
                     lte: endOfMonth,
                 },
                 accountId
@@ -57,22 +57,21 @@ export async function getCurrentBudget(accountId) {
         };
         
     } catch(error) {
-        console.error("Error fetching current budget", error);
+        console.error("Error fetching current budget:", error);
         throw error;
     }
 }
 
 export async function updateBudget(amount) {
-    try{
+    try {
         const {userId} = await auth();
         if(!userId) throw new Error("Unauthorized");
 
-        const user=await db.user.findUnique({
+        const user = await db.user.findUnique({
             where: {clerkUserId: userId},
         });
 
-        if(!user)
-        {
+        if(!user) {
             throw new Error("User not found");
         }
 

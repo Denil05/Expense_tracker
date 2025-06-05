@@ -16,42 +16,38 @@ const BudgetProgress = ({initialBudget, currentExpense}) => {
         initialBudget?.amount?.toString() || ""
     );
 
-    const percentUsed = initialBudget.amount ? (currentExpense / initialBudget.amount) * 100 : 0; 
-
+    const percentUsed = initialBudget?.amount ? (currentExpense / initialBudget.amount) * 100 : 0;
 
     const handleUpdateBudget = async () => {
-        const amount =parseFloat(newBudget);
+        const amount = parseFloat(newBudget);
 
-        if(isNaN(amount) || amount<=0)
-        {
+        if(isNaN(amount) || amount <= 0) {
             toast.error("Please enter a valid amount");
             return;
         }
 
         await updateBudgetFn(amount);
-
     };
 
     const {
-        loading : isLoading,
-        fn : updateBudgetFn,
+        loading: isLoading,
+        fn: updateBudgetFn,
         data: updateBudgetData,
         error,
     } = useFetch(updateBudget);
 
     useEffect(() => {
-        if(updateBudgetData?.success){
+        if(updateBudgetData?.success) {
             setIsEditing(false);
             toast.success("Budget updated successfully");
         }
-    },[updateBudgetData]);
+    }, [updateBudgetData]);
 
     useEffect(() => {
-        if(error)
-        {
+        if(error) {
             toast.error(error.message || "Failed to update budget");
         }
-    },[error]);
+    }, [error]);
 
     const handleCancel = () => {
         setNewBudget(initialBudget?.amount?.toString() || "");
