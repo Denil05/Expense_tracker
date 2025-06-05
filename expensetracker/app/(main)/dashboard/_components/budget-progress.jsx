@@ -8,14 +8,16 @@ import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
 import useFetch from '@/hooks/use-fetch';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const BudgetProgress = ({initialBudget, currentExpense}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [newBudget, setNewBudget] = useState(
         initialBudget?.amount?.toString() || ""
     );
-    
-    const percentUsed = initialBudget ? (currentExpense / initialBudget) * 100 : 0; 
+
+    const percentUsed = initialBudget.amount ? (currentExpense / initialBudget.amount) * 100 : 0; 
+
 
     const handleUpdateBudget = async () => {
         const amount =parseFloat(newBudget);
@@ -63,11 +65,11 @@ const BudgetProgress = ({initialBudget, currentExpense}) => {
             <CardTitle>Monthly Budget(Default Account)</CardTitle>
             <div className="flex items-center gap-2 mt-1">
             {isEditing?<div className="flex items-center gap-2">
-                <Input type='number' value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className = "w-32" placeholder="Enter amount" autoFocus/>
-                <Button variant = "ghost" size="icon" onClick={handleUpdateBudget}>
+                <Input type='number' value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className = "w-32" placeholder="Enter amount" autoFocus disabled={isLoading}/>
+                <Button variant = "ghost" size="icon" onClick={handleUpdateBudget} disabled={isLoading}>
                     <Check className = "w-4 h-4 text-green-500"/>
                 </Button>
-                <Button variant = "ghost" size="icon" onClick={handleCancel}>
+                <Button variant = "ghost" size="icon" onClick={handleCancel} disabled={isLoading}>
                     <X className = "w-4 h-4 text-red-500"/>
                 </Button>
             </div> 
@@ -89,7 +91,17 @@ const BudgetProgress = ({initialBudget, currentExpense}) => {
         <CardContent>
             {initialBudget && 
                 <div className="space-y-2">
-                    <Progress value = {percentUsed}/>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div>
+                                <Progress value={percentUsed} extrastyle={`${percentUsed>=90 ? "bg-red-500" : percentUsed>=70 ? "bg-yellow-500" : "bg-green-500"}`} />
+                                <p className="text-xs text-muted-foreground text-right mt-2">{percentUsed.toFixed(2)}% used</p>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="center" sideOffset={8}>
+                            {percentUsed.toFixed(2)}%
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             }
         </CardContent>
