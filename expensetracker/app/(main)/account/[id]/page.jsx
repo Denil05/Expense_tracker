@@ -8,7 +8,8 @@ import TransactionTable from '../_component/transaction-table';
 import AccountChart from '../_component/account-chart';
 
 const AccountPage = async({params}) => {
-  const accountData = await getAccountWithTransactions(params.id);
+  const id = await Promise.resolve(params.id);
+  const accountData = await getAccountWithTransactions(id);
   
   if(!accountData) {
     return <NotFound />;

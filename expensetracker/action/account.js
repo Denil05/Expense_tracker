@@ -47,13 +47,14 @@ export async function updateDefaultAccount(accountId){
 }
 
 export async function getAccountWithTransactions(accountId){
-    const {userId} = await auth();
-    if(!userId) throw new Error("Unauthorized");
-        
+    try {
+        const {userId} = await auth();
+        if(!userId) return null;
+            
         const user = await db.user.findUnique({
             where: {clerkUserId: userId},
         });
-        if(!user) throw new Error("User not found");
+        if(!user) return null;
 
         const account = await db.account.findUnique({
             where: {id: accountId, userId: user.id},
@@ -66,13 +67,14 @@ export async function getAccountWithTransactions(accountId){
             }
         });
 
+        if(!account) return null;
+
         const transactionCount = await db.transaction.count({
             where: {
                 accountId: accountId
             }
         });
 
-        if(!account) return null;
         return {
             ...serializeTransaction(account),
             transactions: account.transactions.map(serializeTransaction),
@@ -80,6 +82,10 @@ export async function getAccountWithTransactions(accountId){
                 transactions: transactionCount
             }
         };
+    } catch (error) {
+        console.error("Error fetching account with transactions:", error);
+        return null;
+    }
 }
 
 export async function bulkDeleteTransactions(transactionIds){
