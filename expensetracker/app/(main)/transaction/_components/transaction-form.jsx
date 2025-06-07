@@ -17,6 +17,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import ReciptScanner from './recipt-scanner';
 
 const AddTransactionForm = ({ accounts, categories}) => {
     const router = useRouter();
@@ -73,11 +74,62 @@ const AddTransactionForm = ({ accounts, categories}) => {
 
     const filteredCategories = categories.filter(category => category.type === type);
 
+    const handleScanComplete = (scannedData) => {
+        console.log("Scanned Data:", scannedData);
+        console.log("Available Categories:", categories);
+        
+        // Set type (should be EXPENSE for receipts)
+        setValue("type", "EXPENSE");
+        console.log("Setting type to:", "EXPENSE");
+        
+        // Set amount
+        setValue("amount", scannedData.amount.toString());
+        
+        // Set description
+        setValue("description", scannedData.description);
+        
+        // Set date
+        setValue("date", new Date(scannedData.date));
+        
+        // Find the matching category by name
+        const matchingCategory = categories.find(
+            category => category.name.toLowerCase() === scannedData.category.toLowerCase()
+        );
+        console.log("Matching Category:", matchingCategory);
+        
+        if (matchingCategory) {
+            console.log("Setting category to:", matchingCategory.id);
+            setValue("category", matchingCategory.id);
+        } else {
+            // If no exact match, find the closest match or use a default
+            const defaultCategory = categories.find(
+                category => category.type === "EXPENSE" && category.id === "other-expense"
+            );
+            console.log("Default Category:", defaultCategory);
+            setValue("category", defaultCategory?.id || "");
+            toast.warning("Category not found, using default category");
+        }
+        
+        // Force a re-render of the form
+        setTimeout(() => {
+            const currentType = getValues("type");
+            const currentCategory = getValues("category");
+            console.log("Current form values - Type:", currentType, "Category:", currentCategory);
+        }, 100);
+        
+        toast.success("Receipt scanned successfully");
+    }
+
     return (
         <form className="space-y-6 w-full" onSubmit={handleSubmit(onSubmit)}>
+            <ReciptScanner onScanComplete={handleScanComplete}/>
             <div className="space-y-2 w-full">
                 <label className="text-sm font-medium">Type</label>
-                <Select onValueChange={(value) => setValue("type", value)} defaultValue={type} className="w-full">
+                <Select 
+                    onValueChange={(value) => setValue("type", value)} 
+                    value={type} 
+                    className="w-full"
+                >
                     <SelectTrigger className="w-full">    
                         <SelectValue placeholder="Select Type" />
                     </SelectTrigger>
@@ -128,7 +180,11 @@ const AddTransactionForm = ({ accounts, categories}) => {
             </div>
             <div className="space-y-2 w-full">
                 <label className="text-sm font-medium">Category</label>
-                <Select onValueChange={(value) => setValue("category", value)} defaultValue={getValues("category")} className="w-full">
+                <Select 
+                    onValueChange={(value) => setValue("category", value)} 
+                    value={getValues("category")} 
+                    className="w-full"
+                >
                     <SelectTrigger className="w-full">    
                         <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
